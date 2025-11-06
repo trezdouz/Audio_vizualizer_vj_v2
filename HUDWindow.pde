@@ -83,4 +83,3 @@ class HUDWindow {
   void dispose() {
   }
 }
-

@@ -64,14 +64,6 @@ void draw() {
     controls.particlesEnabled,
     audio.isOSCActive()
   );
-  
-  // Particles
-  controls.updateParticles(audio.getBass());
-  
-  // Help overlay
-  if (controls.showHelp) {
-    controls.drawHelpOverlay();
-  }
 }
 
 // ============================================

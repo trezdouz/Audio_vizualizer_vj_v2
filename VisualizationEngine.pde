@@ -8,7 +8,7 @@ class VisualizationEngine {
       new SpectrumMode(),
       new Mode2_Waveform(),
       new Mode3_Radial(),
-      new Mode4_Particles()
+      
     };
     currentMode = modes[0];
     println("✓ Engine initialisé avec " + modes.length + " modes");
@@ -47,7 +47,6 @@ class VisualizationEngine {
     return currentMode.name;
   }
   
-  // ✅ cleanup() DOIT ÊTRE À L'INTÉRIEUR DE LA CLASSE
   void cleanup() {
     println("→ Nettoyage des modes...");
     for (BaseMode mode : modes) {

@@ -6,24 +6,15 @@
 class ControlsManager {
   
   // === ETATS ===
-  boolean particlesEnabled = false;
-  boolean showHelp = false;
-  boolean datamoshEnabled = false;
+  boolean particlesEnabled;
+  boolean showHelp;
+  boolean datamoshEnabled;
   
   // === PARAMETRES SPECTRUM ===
-  boolean spectrumCentered = false;
-  boolean spectrumMirror = false;
-  float spectrumGain = 1.0f;
-  
-  // === PARTICULES ===
-  ArrayList<Particle> particles;
-  int maxParticles = 200;
-  
-  // === CONSTRUCTOR ===
-  ControlsManager() {
-    particles = new ArrayList<Particle>();
-  }
-  
+  boolean spectrumCentered;
+  boolean spectrumMirror;
+  float spectrumGain;
+    
   // ============================================
   // GESTION CLAVIER
   // ============================================
@@ -71,33 +62,7 @@ class ControlsManager {
     }
   }
   
-  // ============================================
-  // PARTICULES
-  // ============================================
-  void updateParticles(float bass) {
-    // Spawn on bass
-    if (particlesEnabled && bass > 0.5f && particles.size() < maxParticles) {
-      float angle = random(TWO_PI);
-      float speed = 2 + bass * 5;
-      particles.add(new Particle(
-        width/2,
-        height/2,
-        cos(angle) * speed,
-        sin(angle) * speed
-      ));
-    }
-    
-    // Update & draw
-    for (int i = particles.size() - 1; i >= 0; i--) {
-      Particle p = particles.get(i);
-      p.update();
-      p.display();
-      
-      if (p.isDead()) {
-        particles.remove(i);
-      }
-    }
-  }
+  
   
   // ============================================
   // AIDE
@@ -118,22 +83,22 @@ class ControlsManager {
   void drawHelpOverlay() {
     pushStyle();
     fill(0, 200);
-    rect(20, 20, 300, 280);
+    rect(20.0f, 20.0f, 300.0f, 280.0f);
     
     fill(255);
     textAlign(LEFT, TOP);
     textSize(14);
     
-    text("CONTROLS", 40, 40);
-    text("1-9 : Switch mode", 40, 70);
-    text("TAB : Next mode", 40, 90);
-    text("SPACE : Particles", 40, 110);
-    text("H : HUD", 40, 130);
-    text("C : Center spectrum", 40, 150);
-    text("M : Mirror spectrum", 40, 170);
-    text("+/- : Spectrum gain", 40, 190);
-    text("D : Debug OSC", 40, 210);
-    text("F : Toggle this help", 40, 250);
+    text("CONTROLS", 40.0f, 40.0f);
+    text("1-9 : Switch mode", 40.0f, 70.0f);
+    text("TAB : Next mode", 40.0f, 90.0f);
+    text("SPACE : Particles", 40.0f, 110.0f);
+    text("H : HUD", 40.0f, 130.0f);
+    text("C : Center spectrum", 40.0f, 150.0f);
+    text("M : Mirror spectrum", 40.0f, 170.0f);
+    text("+/- : Spectrum gain", 40.0f, 190.0f);
+    text("D : Debug OSC", 40.0f, 210.0f);
+    text("F : Toggle this help", 40.0f, 250.0f);
     
     popStyle();
   }
