@@ -14,7 +14,23 @@ class ControlsManager {
   boolean spectrumCentered;
   boolean spectrumMirror;
   float spectrumGain;
-    
+  
+  // === PARTICULES ===
+  ArrayList<Particle> particles;
+  int maxParticles;
+  
+  // === CONSTRUCTOR ===
+  ControlsManager() {
+    particles = new ArrayList<Particle>();
+    particlesEnabled = false;
+    showHelp = false;
+    datamoshEnabled = false;
+    spectrumCentered = false;
+    spectrumMirror = false;
+    spectrumGain = 1.0f;
+    maxParticles = 200;
+  }
+  
   // ============================================
   // GESTION CLAVIER
   // ============================================
@@ -62,7 +78,33 @@ class ControlsManager {
     }
   }
   
-  
+  // ============================================
+  // PARTICULES (utilise constructeur 4 parametres)
+  // ============================================
+  void updateParticles(float bass) {
+    // Spawn on bass
+    if (particlesEnabled && bass > 0.5f && particles.size() < maxParticles) {
+      float angle = random(TWO_PI);
+      float speed = 2.0f + bass * 5.0f;
+      particles.add(new Particle(
+        width/2.0f,
+        height/2.0f,
+        cos(angle) * speed,
+        sin(angle) * speed
+      ));
+    }
+    
+    // Update & draw
+    for (int i = particles.size() - 1; i >= 0; i--) {
+      Particle p = particles.get(i);
+      p.update();
+      p.display();
+      
+      if (p.isDead()) {
+        particles.remove(i);
+      }
+    }
+  }
   
   // ============================================
   // AIDE

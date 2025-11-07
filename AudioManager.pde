@@ -4,31 +4,45 @@
 
 class AudioManager {
   // Raw values from OSC
-  private float rawBass = 0;
-  private float rawMid = 0;
-  private float rawTreble = 0;
+  private float rawBass;
+  private float rawMid;
+  private float rawTreble;
   private float[] rawSpectrum;
   
   // Smoothed values
-  private float smoothBass = 0;
-  private float smoothMid = 0;
-  private float smoothTreble = 0;
+  private float smoothBass;
+  private float smoothMid;
+  private float smoothTreble;
   private float[] smoothSpectrum;
   
-  private float SMOOTHING = 0.2;
-  private float DECAY = 0.95;
+  private float SMOOTHING;
+  private float DECAY;
   
-  private boolean oscReceived = false;
-  private int lastOscTime = 0;
+  private boolean oscReceived;
+  private int lastOscTime;
   
   AudioManager(int spectrumSize) {
+    rawBass = 0.0f;
+    rawMid = 0.0f;
+    rawTreble = 0.0f;
     rawSpectrum = new float[spectrumSize];
+    
+    smoothBass = 0.0f;
+    smoothMid = 0.0f;
+    smoothTreble = 0.0f;
     smoothSpectrum = new float[spectrumSize];
-    println("✓ AudioManager initialized (spectrum: " + spectrumSize + ")");
+    
+    SMOOTHING = 0.2f;
+    DECAY = 0.95f;
+    
+    oscReceived = false;
+    lastOscTime = 0;
+    
+    println("AudioManager initialized (spectrum: " + spectrumSize + ")");
   }
   
   // ============================================
-  // OSC HANDLING (appelé depuis oscEvent())
+  // OSC HANDLING (appele depuis oscEvent())
   // ============================================
   void handleOSC(OscMessage msg) {
     lastOscTime = millis();
@@ -39,7 +53,7 @@ class AudioManager {
         rawBass = msg.get(0).floatValue();
         rawMid = msg.get(1).floatValue();
         rawTreble = msg.get(2).floatValue();
-        println("  ✅ Energy -> Bass: " + rawBass + " | Mid: " + rawMid + " | Treble: " + rawTreble);
+        println("Energy -> Bass: " + rawBass + " | Mid: " + rawMid + " | Treble: " + rawTreble);
       }
     }
     else if (msg.checkAddrPattern("/audio/spectrum")) {
@@ -47,7 +61,7 @@ class AudioManager {
       for (int i = 0; i < bands; i++) {
         rawSpectrum[i] = msg.get(i).floatValue();
       }
-      println("  📊 Spectrum: " + bands + " bands");
+      println("Spectrum: " + bands + " bands");
     }
   }
   
@@ -77,11 +91,25 @@ class AudioManager {
   // ============================================
   // GETTERS
   // ============================================
-  float getBass() { return smoothBass; }
-  float getMid() { return smoothMid; }
-  float getTreble() { return smoothTreble; }
-  float[] getSpectrum() { return smoothSpectrum; }
-  boolean isOSCActive() { return oscReceived && (millis() - lastOscTime < 1000); }
+  float getBass() { 
+    return smoothBass; 
+  }
+  
+  float getMid() { 
+    return smoothMid; 
+  }
+  
+  float getTreble() { 
+    return smoothTreble; 
+  }
+  
+  float[] getSpectrum() { 
+    return smoothSpectrum; 
+  }
+  
+  boolean isOSCActive() { 
+    return oscReceived && (millis() - lastOscTime < 1000); 
+  }
   
   // ============================================
   // DEBUG

@@ -5,27 +5,28 @@
 
 import oscP5.*;
 import netP5.*;
+public class Audio_vizualizer_vj_v2 extends PApplet implements IAudioProvider {
 
 // Core components
 OscP5 oscP5;
-AudioManager audio;
+public AudioManager audio;
 VisualizationEngine viz;
 ControlsManager controls;
 HUDWindow hud;
 
-void setup() {
+public void setup() {
   size(1280, 720, P3D);
   surface.setLocation(300, 300);
   frameRate(60);
   smooth(8);
   
-  println("\n═══════════════════════════");
+  println("\n===========================");
   println("  AUDIO VISUALIZER VJ v2.0");
-  println("═══════════════════════════\n");
+  println("===========================\n");
   
   // Initialize OSC
   oscP5 = new OscP5(this, 12000);
-  println("✓ OSC listening on port 12000");
+  println("OSC listening on port 12000");
   
   // Initialize managers
   audio = new AudioManager(128);
@@ -35,11 +36,14 @@ void setup() {
   // HUD
   hud = new HUDWindow(this);
   
-  println("\n✅ READY!\n");
+  println("\nREADY!\n");
   controls.printHelp();
 }
-
-void draw() {
+  public AudioManager getAudio() {
+    return audio;
+}
+  
+public void draw() {
   background(0);
   
   // Update audio
@@ -64,6 +68,14 @@ void draw() {
     controls.particlesEnabled,
     audio.isOSCActive()
   );
+  
+  // Particles
+  controls.updateParticles(audio.getBass());
+  
+  // Help overlay
+  if (controls.showHelp) {
+    controls.drawHelpOverlay();
+  }
 }
 
 // ============================================
