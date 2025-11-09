@@ -6,17 +6,18 @@ class Particle {
   PVector pos;
   PVector vel;
   float lifespan;
-  float size;
-  color col;
+  float particleSize;  // RENOMME: "size" peut causer des conflits
+  color particleColor; // RENOMME: "col" peut causer des conflits
   
   // Constructeur pour ControlsManager (4 parametres)
   Particle(float x, float y, float vx, float vy) {
     pos = new PVector(x, y);
     vel = new PVector(vx, vy);
     lifespan = 255.0f;
-    size = 8.0f;
+    particleSize = 8.0f;
+    
     colorMode(HSB, 360, 100, 100);
-    col = color(280, 80, 100);
+    particleColor = color(280, 80, 100);
     colorMode(RGB, 255);
   }
   
@@ -29,10 +30,10 @@ class Particle {
     vel = new PVector(cos(angle) * speed, sin(angle) * speed);
     
     lifespan = 255.0f;
-    size = map(energy, 0.0f, 1.0f, 5.0f, 20.0f);
+    particleSize = map(energy, 0.0f, 1.0f, 5.0f, 20.0f);
     
     colorMode(HSB, 360, 100, 100);
-    col = color(map(energy, 0.0f, 1.0f, 180, 360), 80, 100);
+    particleColor = color(map(energy, 0.0f, 1.0f, 180.0f, 360.0f), 80, 100);
     colorMode(RGB, 255);
   }
   
@@ -46,13 +47,13 @@ class Particle {
   void display() {
     pushStyle();
     noStroke();
-    fill(col, lifespan);
-    circle(pos.x, pos.y, size);
+    fill(particleColor, lifespan);
+    circle(pos.x, pos.y, particleSize);
     popStyle();
   }
   
   boolean isDead() {
-    return lifespan <= 0.0f || pos.x < 0 || pos.x > width || pos.y < 0 || pos.y > height;
+    return lifespan <= 0.0f || pos.x < 0.0f || pos.x > width || pos.y < 0.0f || pos.y > height;
   }
   
   void cleanup() {

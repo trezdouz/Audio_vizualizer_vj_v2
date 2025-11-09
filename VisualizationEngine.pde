@@ -14,7 +14,7 @@ class VisualizationEngine {
   // ============================================
   VisualizationEngine() {
     modes = new BaseMode[] {
-      new SpectrumMode(),
+      new SpectrumMode()
      // new Mode2_Waveform(),
       // new Mode3_Radial(),
       // new Mode4_Particles()

@@ -5,18 +5,28 @@
 
 import oscP5.*;
 import netP5.*;
-public class Audio_vizualizer_vj_v2 extends PApplet implements IAudioProvider {
 
 // Core components
 OscP5 oscP5;
-public AudioManager audio;
+AudioManager audio;
 VisualizationEngine viz;
 ControlsManager controls;
 HUDWindow hud;
 
-public void setup() {
+// ============================================
+// IMPLEMENTATION DE L'INTERFACE
+// ============================================
+IAudioProvider getAudioProvider() {
+  return new IAudioProvider() {
+    public AudioManager getAudio() {
+      return audio;
+    }
+  };
+}
+
+void setup() {
   size(1280, 720, P3D);
-  surface.setLocation(300, 300);
+  surface.setLocation(100, 200);
   frameRate(60);
   smooth(8);
   
@@ -33,17 +43,14 @@ public void setup() {
   viz = new VisualizationEngine();
   controls = new ControlsManager();
   
-  // HUD
-  hud = new HUDWindow(this);
+  // HUD - passe l'interface
+  hud = new HUDWindow(getAudioProvider());
   
   println("\nREADY!\n");
   controls.printHelp();
 }
-  public AudioManager getAudio() {
-    return audio;
-}
-  
-public void draw() {
+
+void draw() {
   background(0);
   
   // Update audio
@@ -56,17 +63,6 @@ public void draw() {
     audio.getTreble(), 
     audio.getSpectrum(),
     controls
-  );
-  
-  // Update HUD
-  hud.update(
-    audio.getBass(), 
-    audio.getMid(), 
-    audio.getTreble(), 
-    viz.getCurrentModeIndex(),
-    viz.getCurrentModeName(),
-    controls.particlesEnabled,
-    audio.isOSCActive()
   );
   
   // Particles

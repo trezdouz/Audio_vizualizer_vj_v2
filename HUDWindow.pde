@@ -12,11 +12,12 @@ class HUDWindow extends PApplet {
   float[] midHistory;
   float[] trebleHistory;
   int historyIndex;
-  // taile
+  
+  // Taille
   int windowWidth = 400;
   int windowHeight = 400;
   
-  HUDWindow(PApplet p) {
+  HUDWindow(IAudioProvider p) {
     super();
     this.parent = p;
     visible = true;
@@ -25,8 +26,8 @@ class HUDWindow extends PApplet {
     trebleHistory = new float[100];
     historyIndex = 0;
     
-    // Lance la fenêtre séparée
-     PApplet.runSketch(new String[]{this.getClass().getSimpleName()}, this);
+    // Lance la fenetre separee
+    PApplet.runSketch(new String[]{this.getClass().getSimpleName()}, this);
   }
   
   void settings() {
@@ -34,22 +35,21 @@ class HUDWindow extends PApplet {
   }
   
   void draw() {
-    // Si invisible, on dessine quand même (mais on pourrait cacher la fenêtre)
+    // Si invisible, on dessine quand meme (mais on pourrait cacher la fenetre)
     if (!visible) {
-        background(0);
-        return;
+      background(0);
+      return;
     }
     
     // Fond noir
     background(30);
     
-    // Récupère les données depuis la fenêtre principale
+    // Recupere les donnees depuis la fenetre principale
+    float bass = parent.getAudio().getBass();
+    float mid = parent.getAudio().getMid();
+    float treble = parent.getAudio().getTreble();
     
-    float bass = parent.audio.getBass();
-    float mid = parent.getMid;
-    float treble = parent.getTreble;
-    
-    // Met à jour l'historique
+    // Met a jour l'historique
     bassHistory[historyIndex] = bass;
     midHistory[historyIndex] = mid;
     trebleHistory[historyIndex] = treble;
@@ -57,13 +57,14 @@ class HUDWindow extends PApplet {
     
     // Dessine le HUD
     drawHUD(bass, mid, treble);
-}
+  }
+  
   void drawHUD(float bass, float mid, float treble) {
     pushStyle();
     
     fill(255);
     textSize(16);
-    text("🎛️ AUDIO LEVELS", 10, 20);
+    text("AUDIO LEVELS", 10, 20);
     
     textSize(12);
     fill(255, 100, 100);
@@ -75,9 +76,11 @@ class HUDWindow extends PApplet {
     fill(100, 200, 255);
     text("TREBLE: " + nf(treble, 0, 3), 10, 90);
     
-    popStyle();
-    }
+    // Dessine les waveforms
+    drawWaveform();
     
+    popStyle();
+  }
   
   void drawWaveform() {
     pushStyle();
@@ -87,8 +90,8 @@ class HUDWindow extends PApplet {
     stroke(255, 0, 0, 150);
     beginShape();
     for (int i = 0; i < bassHistory.length; i++) {
-      float x = map(i, 0.0f, bassHistory.length, 320.0f, 620.0f);
-      float y = map(bassHistory[i], 0.0f, 1.0f, 180.0f, 80.0f);
+      float x = map(i, 0.0f, bassHistory.length, 10.0f, windowWidth - 10.0f);
+      float y = map(bassHistory[i], 0.0f, 1.0f, windowHeight - 50.0f, 150.0f);
       vertex(x, y);
     }
     endShape();
@@ -97,8 +100,8 @@ class HUDWindow extends PApplet {
     stroke(0, 255, 0, 150);
     beginShape();
     for (int i = 0; i < midHistory.length; i++) {
-      float x = map(i, 0.0f, midHistory.length, 320.0f, 620.0f);
-      float y = map(midHistory[i], 0.0f, 1.0f, 180.0f, 80.0f);
+      float x = map(i, 0.0f, midHistory.length, 10.0f, windowWidth - 10.0f);
+      float y = map(midHistory[i], 0.0f, 1.0f, windowHeight - 50.0f, 150.0f);
       vertex(x, y);
     }
     endShape();
@@ -107,8 +110,8 @@ class HUDWindow extends PApplet {
     stroke(0, 150, 255, 150);
     beginShape();
     for (int i = 0; i < trebleHistory.length; i++) {
-      float x = map(i, 0.0f, trebleHistory.length, 320.0f, 620.0f);
-      float y = map(trebleHistory[i], 0.0f, 1.0f, 180.0f, 80.0f);
+      float x = map(i, 0.0f, trebleHistory.length, 10.0f, windowWidth - 10.0f);
+      float y = map(trebleHistory[i], 0.0f, 1.0f, windowHeight - 50.0f, 150.0f);
       vertex(x, y);
     }
     endShape();
