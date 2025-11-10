@@ -13,12 +13,15 @@ VisualizationEngine viz;
 ControlsManager controls;
 HUDWindow hud;
 
+interface IAudioProvider {
+  AudioManager getAudio();
+}
+
 // ============================================
 // IMPLEMENTATION DE L'INTERFACE
 // ============================================
 IAudioProvider getAudioProvider() {
-  return new IAudioProvider() {
-    public AudioManager getAudio() {
+  return new IAudioProvider() {public AudioManager getAudio() {
       return audio;
     }
   };
@@ -26,7 +29,7 @@ IAudioProvider getAudioProvider() {
 
 void setup() {
   size(1280, 720, P3D);
-  surface.setLocation(100, 200);
+  surface.setLocation(150, 200);
   frameRate(60);
   smooth(8);
   
@@ -39,7 +42,7 @@ void setup() {
   println("OSC listening on port 12000");
   
   // Initialize managers
-  audio = new AudioManager(128);
+  audio = new AudioManager(64);
   viz = new VisualizationEngine();
   controls = new ControlsManager();
   

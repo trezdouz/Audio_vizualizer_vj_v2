@@ -32,8 +32,8 @@ class AudioManager {
     smoothTreble = 0.0f;
     smoothSpectrum = new float[spectrumSize];
     
-    SMOOTHING = 0.2f;
-    DECAY = 0.95f;
+    SMOOTHING = 0.05f;
+    DECAY = 0.98f;
     
     oscReceived = false;
     lastOscTime = 0;
@@ -55,14 +55,15 @@ class AudioManager {
         rawTreble = msg.get(2).floatValue();
         println("Energy -> Bass: " + rawBass + " | Mid: " + rawMid + " | Treble: " + rawTreble);
       }
-    }
-    else if (msg.checkAddrPattern("/audio/spectrum")) {
-      int bands = min(rawSpectrum.length, msg.arguments().length);
-      for (int i = 0; i < bands; i++) {
-        rawSpectrum[i] = msg.get(i).floatValue();
-      }
-      println("Spectrum: " + bands + " bands");
-    }
+    }else if (msg.checkAddrPattern("/audio/spectrum")) {
+  int bands = min(rawSpectrum.length, msg.arguments().length);
+  println("SPECTRUM: Received " + msg.arguments().length + " bands (expected: " + rawSpectrum.length + ")"); // <- AJOUTEZ CETTE LIGNE
+  for (int i = 0; i < bands; i++) {
+    rawSpectrum[i] = msg.get(i).floatValue();
+  }
+  println("Spectrum: " + bands + " bands");
+}
+
   }
   
   // ============================================
@@ -92,19 +93,19 @@ class AudioManager {
   // GETTERS
   // ============================================
   float getBass() { 
-    return smoothBass; 
+    return constrain(smoothBass * 50.0f, 0.0f, 1.0f); 
   }
   
   float getMid() { 
-    return smoothMid; 
+    return constrain(smoothMid * 50.0f, 0.0f, 1.0f); 
   }
   
   float getTreble() { 
-    return smoothTreble; 
+    return constrain(smoothTreble * 50.0f, 0.0f, 1.0f); 
   }
   
   float[] getSpectrum() { 
-    return smoothSpectrum; 
+    return (smoothSpectrum); 
   }
   
   boolean isOSCActive() { 

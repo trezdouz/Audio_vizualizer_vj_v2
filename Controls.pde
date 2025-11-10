@@ -19,6 +19,9 @@ class ControlsManager {
   ArrayList<Particle> particles;
   int maxParticles;
   
+  // === PALETTE ===
+  PaletteManager paletteManager;
+  
   // === CONSTRUCTOR ===
   ControlsManager() {
     particles = new ArrayList<Particle>();
@@ -29,6 +32,7 @@ class ControlsManager {
     spectrumMirror = false;
     spectrumGain = 1.0f;
     maxParticles = 200;
+    paletteManager = new PaletteManager(); // initialisation du gestionnaire de palette
   }
   
   // ============================================
@@ -58,7 +62,10 @@ class ControlsManager {
     else if (k == 'f' || k == 'F') {
       showHelp = !showHelp;
     }
-    
+    // PALETTE CONTROLS
+    else if (k == 'p' || k == 'P') {
+      paletteManager.next();
+    }
     // SPECTRUM CONTROLS
     else if (k == 'c' || k == 'C') {
       spectrumCentered = !spectrumCentered;
@@ -116,6 +123,8 @@ class ControlsManager {
     println("   SPACE  : Toggle particles");
     println("   H      : Toggle HUD");
     println("   F      : Toggle help overlay");
+    println("   P      : Next palette");
+    println("   O      : Previous palette");
     println("   C      : Center spectrum");
     println("   M      : Mirror spectrum");
     println("   +/-    : Spectrum gain");
@@ -136,6 +145,7 @@ class ControlsManager {
     text("TAB : Next mode", 40.0f, 90.0f);
     text("SPACE : Particles", 40.0f, 110.0f);
     text("H : HUD", 40.0f, 130.0f);
+    text("P/O : Change palette", 40.0f, 150.0f);
     text("C : Center spectrum", 40.0f, 150.0f);
     text("M : Mirror spectrum", 40.0f, 170.0f);
     text("+/- : Spectrum gain", 40.0f, 190.0f);

@@ -1,3 +1,0 @@
-interface IAudioProvider {
-  AudioManager getAudio();
-}

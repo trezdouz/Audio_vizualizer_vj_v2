@@ -3,7 +3,7 @@
 // ============================================
 
 abstract class BaseMode {
-  
+
   // Rendering
   protected PGraphics buffer;
   protected boolean useGPU;
