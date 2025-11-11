@@ -13,15 +13,18 @@ VisualizationEngine viz;
 ControlsManager controls;
 HUDWindow hud;
 
+int hudUpdateCounter = 0;
 interface IAudioProvider {
-  AudioManager getAudio();
-}
 
+  AudioManager getAudio();
+
+}
 // ============================================
 // IMPLEMENTATION DE L'INTERFACE
 // ============================================
 IAudioProvider getAudioProvider() {
-  return new IAudioProvider() {public AudioManager getAudio() {
+  return new IAudioProvider() {
+    public AudioManager getAudio() {
       return audio;
     }
   };
@@ -69,12 +72,48 @@ void draw() {
   );
   
   // Particles
-  controls.updateParticles(audio.getBass());
+  controls.updateParticles(audio.getBass(), audio.getMid(), audio.getTreble());
   
   // Help overlay
   if (controls.showHelp) {
     controls.drawHelpOverlay();
   }
+  
+  // Update HUD info periodiquement (toutes les 30 frames)
+  hudUpdateCounter++;
+  if (hudUpdateCounter >= 30) {
+    hudUpdateCounter = 0;
+    try {
+      hud.updateInfo(
+        viz.getCurrentModeName(),
+        controls.paletteManager.getCurrent().name
+      );
+    } catch (Exception e) {
+      // Ignore si le HUD n'est pas pret
+    }
+  }
+  
+  // Info en bas de l'ecran principale
+  drawMainInfo();
+}
+
+void drawMainInfo() {
+  pushStyle();
+  colorMode(RGB, 255);
+  
+  fill(0, 150);
+  noStroke();
+  rect(0, height - 50, width, 50);
+  
+  fill(255);
+  textAlign(LEFT, CENTER);
+  textSize(14);
+  text("Mode: " + viz.getCurrentModeName() + " | Palette: " + controls.paletteManager.getCurrent().name, 10, height - 25);
+  
+  textAlign(RIGHT, CENTER);
+  text("Press F for help | H for HUD | P/O for palette", width - 10, height - 25);
+  
+  popStyle();
 }
 
 // ============================================

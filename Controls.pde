@@ -32,7 +32,9 @@ class ControlsManager {
     spectrumMirror = false;
     spectrumGain = 1.0f;
     maxParticles = 200;
-    paletteManager = new PaletteManager(); // initialisation du gestionnaire de palette
+    
+    // Initialiser le gestionnaire de palettes
+    paletteManager = new PaletteManager();
   }
   
   // ============================================
@@ -62,10 +64,15 @@ class ControlsManager {
     else if (k == 'f' || k == 'F') {
       showHelp = !showHelp;
     }
+    
     // PALETTE CONTROLS
     else if (k == 'p' || k == 'P') {
       paletteManager.next();
     }
+    else if (k == 'o' || k == 'O') {
+      paletteManager.previous();
+    }
+    
     // SPECTRUM CONTROLS
     else if (k == 'c' || k == 'C') {
       spectrumCentered = !spectrumCentered;
@@ -88,7 +95,7 @@ class ControlsManager {
   // ============================================
   // PARTICULES (utilise constructeur 4 parametres)
   // ============================================
-  void updateParticles(float bass) {
+  void updateParticles(float bass, float mid, float treble) {
     // Spawn on bass
     if (particlesEnabled && bass > 0.5f && particles.size() < maxParticles) {
       float angle = random(TWO_PI);
@@ -101,10 +108,10 @@ class ControlsManager {
       ));
     }
     
-    // Update & draw
+    // Update & draw with audio
     for (int i = particles.size() - 1; i >= 0; i--) {
       Particle p = particles.get(i);
-      p.update();
+      p.updateWithAudio(mid, treble);
       p.display();
       
       if (p.isDead()) {
@@ -134,7 +141,7 @@ class ControlsManager {
   void drawHelpOverlay() {
     pushStyle();
     fill(0, 200);
-    rect(20.0f, 20.0f, 300.0f, 280.0f);
+    rect(20.0f, 20.0f, 320.0f, 320.0f);
     
     fill(255);
     textAlign(LEFT, TOP);
@@ -146,11 +153,14 @@ class ControlsManager {
     text("SPACE : Particles", 40.0f, 110.0f);
     text("H : HUD", 40.0f, 130.0f);
     text("P/O : Change palette", 40.0f, 150.0f);
-    text("C : Center spectrum", 40.0f, 150.0f);
-    text("M : Mirror spectrum", 40.0f, 170.0f);
-    text("+/- : Spectrum gain", 40.0f, 190.0f);
-    text("D : Debug OSC", 40.0f, 210.0f);
+    text("C : Center spectrum", 40.0f, 170.0f);
+    text("M : Mirror spectrum", 40.0f, 190.0f);
+    text("+/- : Spectrum gain", 40.0f, 210.0f);
+    text("D : Debug OSC", 40.0f, 230.0f);
     text("F : Toggle this help", 40.0f, 250.0f);
+    
+    // Afficher la palette actuelle
+    text("Palette: " + paletteManager.getCurrent().name, 40.0f, 280.0f);
     
     popStyle();
   }

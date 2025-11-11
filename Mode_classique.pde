@@ -1,3 +1,7 @@
+// ============================================
+// MODE 1 : SPECTRUM ANALYZER
+// ============================================
+
 class SpectrumMode extends BaseMode {
   
   SpectrumMode() {
@@ -7,37 +11,70 @@ class SpectrumMode extends BaseMode {
   void render(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
     background(0);
     
-    // TEST : Rectangle rouge pour vérifier que ça marche
-    fill(255, 0, 0);
-    rect(50, 50, 100, 100);
-    
-    // Si pas de données, stop
+    // Si pas de donnees, stop
     if (spectrum == null || spectrum.length == 0) return;
     
-    // Configuration simple
-    colorMode(HSB, 360, 100, 100);
-    noStroke();
+    // Get current palette
+    ColorPalette palette = controls.paletteManager.getCurrent();
     
+    noStroke();
     float barWidth = width / float(spectrum.length);
     
-    
-    
-    // Dessiner les barres
-    for (int i = 0; i < spectrum.length; i++) {
-      float x = i * barWidth;
-      float amplification = map(i, 0, spectrum.length, 20.0f, 200.0f);
-float h = spectrum[i] * height * amplification;
-
-      if (h < 2.0f) h = 2.0f;  // Minimum visible
-      if (h > height) h = height;
+    if (controls.spectrumCentered) {
+      // MODE CENTRE
+      pushMatrix();
+      translate(0, height/2.0f);
       
-      float hue = map(i, 0, spectrum.length, 0, 360);
-      fill(hue, 80, 90);
+      for (int i = 0; i < spectrum.length; i++) {
+        float x = i * barWidth;
+        float amplification = map(i, 0, spectrum.length, 20.0f, 200.0f);
+        float h = spectrum[i] * height * amplification * 0.4f;
+        
+        if (h < 2.0f) h = 2.0f;
+        if (h > height/2.0f) h = height/2.0f;
+        
+        // Get color from palette
+        float position = (float)i / spectrum.length;
+        color barColor = palette.getColorSmooth(position);
+        
+        // Barre vers le haut
+        fill(barColor);
+        rect(x, 0, barWidth - 1, -h);
+        
+        // Barre vers le bas (miroir)
+        if (controls.spectrumMirror) {
+          fill(red(barColor), green(barColor), blue(barColor), 150);
+          rect(x, 0, barWidth - 1, h);
+        }
+      }
       
-      rect(x, height - h, barWidth - 1, h);
+      popMatrix();
+      
+    } else {
+      // MODE BAS (classique)
+      for (int i = 0; i < spectrum.length; i++) {
+        float x = i * barWidth;
+        float amplification = map(i, 0, spectrum.length, 20.0f, 200.0f);
+        float h = spectrum[i] * height * amplification;
+        
+        if (h < 2.0f) h = 2.0f;
+        if (h > height) h = height;
+        
+        // Get color from palette
+        float position = (float)i / spectrum.length;
+        color barColor = palette.getColorSmooth(position);
+        
+        fill(barColor);
+        rect(x, height - h, barWidth - 1, h);
+        
+        // Effet miroir (reflection en haut)
+        if (controls.spectrumMirror) {
+          fill(red(barColor), green(barColor), blue(barColor), 100);
+          rect(x, height - h - h * 0.3f, barWidth - 1, h * 0.3f);
+        }
+      }
     }
   }
-
 }
 
 //==========|
