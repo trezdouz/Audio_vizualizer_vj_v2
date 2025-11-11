@@ -14,12 +14,14 @@ class HUDWindow extends PApplet {
   int historyIndex;
   
   // Taille
-  int windowWidth = 500;
+  int windowWidth = 600;
   int windowHeight = 500;
   
   // Cache pour eviter les appels constants
-  String cachedModeName = "";
-  String cachedPaletteName = "";
+  String cachedModeName = "Loading...";
+  String cachedPaletteName = "Loading...";
+  
+  // compteur
   int updateCounter = 0;
   
   HUDWindow(IAudioProvider p) {
@@ -69,12 +71,9 @@ class HUDWindow extends PApplet {
     historyIndex = (historyIndex + 1) % bassHistory.length;
     
     // Update cache periodiquement
-    updateCounter++;
+     updateCounter++;
     if (updateCounter % 30 == 0) {
       try {
-        // Ces appels peuvent echouer si appeles depuis un autre thread
-        cachedModeName = "Mode ?";
-        cachedPaletteName = "Palette ?";
       } catch (Exception e) {
         // Ignore
       }
@@ -107,13 +106,15 @@ class HUDWindow extends PApplet {
       text("OSC: WAITING...", 15, 40);
     }
     
-    // Mode et Palette info
+    // Mode et Palette info (FIXE - pas de clignotement)
     fill(255);
-    text("Mode: " + cachedModeName, width - 200, 15);
-    text("Palette: " + cachedPaletteName, width - 200, 35);
+    textAlign(RIGHT, TOP);
+    text("Mode: " + cachedModeName, width - 15, 15);
+    text("Palette: " + cachedPaletteName, width - 15, 35);
     
     // Section Levels
     fill(255, 200);
+    textAlign(LEFT, CENTER);
     textSize(16);
     text("AUDIO LEVELS", 15, 80);
     
@@ -121,6 +122,7 @@ class HUDWindow extends PApplet {
     
     // Bass bar
     fill(255, 100, 100);
+    textAlign(LEFT, CENTER);
     text("BASS", 15, 110);
     drawLevelBar(100, 110, 300, 20, bass, color(255, 100, 100));
     text(nf(bass, 0, 3), 410, 110);

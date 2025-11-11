@@ -4,20 +4,29 @@
 // ============================================
 
 class ControlsManager {
-  
+
   // === ETATS ===
   boolean particlesEnabled;
   boolean showHelp;
   boolean datamoshEnabled;
+  boolean showBackground;
   
   // === PARAMETRES SPECTRUM ===
   boolean spectrumCentered;
   boolean spectrumMirror;
   float spectrumGain;
   
+  //=== WaveForms ===
+  boolean waveformTrail = true;
+  boolean waveformMultiple = false;
+  boolean waveformParticles = true;
+
   // === PARTICULES ===
   ArrayList<Particle> particles;
   int maxParticles;
+  
+
+
   
   // === PALETTE ===
   PaletteManager paletteManager;
@@ -46,7 +55,14 @@ class ControlsManager {
     if (k >= '1' && k <= '9') {
       viz.switchMode(k - '1');
     }
-    
+    // datamosh
+    else if (key == 'g' || key == 'G') {
+  viz.datamoshEffect.toggle();
+}
+// image
+else if (key == 'i' || key == 'I') {
+    viz.datamoshEffect.selectImage();
+  }
     // Controles principaux
     else if (k == ' ') {
       particlesEnabled = !particlesEnabled;
@@ -64,7 +80,7 @@ class ControlsManager {
     else if (k == 'f' || k == 'F') {
       showHelp = !showHelp;
     }
-    
+   
     // PALETTE CONTROLS
     else if (k == 'p' || k == 'P') {
       paletteManager.next();
@@ -92,33 +108,6 @@ class ControlsManager {
     }
   }
   
-  // ============================================
-  // PARTICULES (utilise constructeur 4 parametres)
-  // ============================================
-  void updateParticles(float bass, float mid, float treble) {
-    // Spawn on bass
-    if (particlesEnabled && bass > 0.5f && particles.size() < maxParticles) {
-      float angle = random(TWO_PI);
-      float speed = 2.0f + bass * 5.0f;
-      particles.add(new Particle(
-        width/2.0f,
-        height/2.0f,
-        cos(angle) * speed,
-        sin(angle) * speed
-      ));
-    }
-    
-    // Update & draw with audio
-    for (int i = particles.size() - 1; i >= 0; i--) {
-      Particle p = particles.get(i);
-      p.updateWithAudio(mid, treble);
-      p.display();
-      
-      if (p.isDead()) {
-        particles.remove(i);
-      }
-    }
-  }
   
   // ============================================
   // AIDE
@@ -142,6 +131,7 @@ class ControlsManager {
     pushStyle();
     fill(0, 200);
     rect(20.0f, 20.0f, 320.0f, 320.0f);
+    int y = 80;
     
     fill(255);
     textAlign(LEFT, TOP);
@@ -157,6 +147,9 @@ class ControlsManager {
     text("M : Mirror spectrum", 40.0f, 190.0f);
     text("+/- : Spectrum gain", 40.0f, 210.0f);
     text("D : Debug OSC", 40.0f, 230.0f);
+    text("[G] Toggle Datamosh", 40, y); y += 30;
+    text("[I] Charger image de fond", 40, y); y += 30;
+
     text("F : Toggle this help", 40.0f, 250.0f);
     
     // Afficher la palette actuelle

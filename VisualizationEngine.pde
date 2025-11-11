@@ -8,16 +8,20 @@ class VisualizationEngine {
   BaseMode[] modes;
   int currentModeIndex;
   BaseMode currentMode;
-
+  DatamoshEffect datamoshEffect;
   // ============================================
   // CONSTRUCTOR
   // ============================================
   VisualizationEngine() {
+    datamoshEffect = new DatamoshEffect(width, height);
     modes = new BaseMode[] {
-      new SpectrumMode(),
-      new Mode_Waveform(),
-      new Mode_Radial(),
-      new Mode_Particles()
+      new SpectrumMode(),           // 1
+      new Mode_Waveform(),         // 2
+      new Mode_Radial(),           // 3
+      new Mode_Particles(),        // 4
+      new Mode_Oscilloscopes(),    // 5
+      new Mode_CircularStatic(),   // 6
+      new Mode_FrequencyBars()    // 7
     };
 
     currentModeIndex = 0;
@@ -30,11 +34,12 @@ class VisualizationEngine {
   // ============================================
   void update(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
     currentMode.render(bass, mid, treble, spectrum, controls);
-  }
-
-  void render() {
-    // Deja fait dans update
-  }
+    
+     if (datamoshEffect.enabled) {
+      datamoshEffect.apply(g, bass, mid, treble);
+    }
+ }
+ 
 
   // ============================================
   // MODE SWITCHING

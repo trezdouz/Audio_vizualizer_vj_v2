@@ -77,265 +77,346 @@ class SpectrumMode extends BaseMode {
   }
 }
 
-//==========|
-// WaveForm |
-//==========|
 
-// ============================================
-// MODE 2 : WAVEFORM
-// ============================================
-
+// =================================
+// MODE 2 : OSCILLOSCOPE HORIZONTAL
+// =================================
 class Mode_Waveform extends BaseMode {
-  
-  float[] smoothedSpectrum;
-  float phase;
   
   Mode_Waveform() {
     super("Waveform");
-    smoothedSpectrum = new float[64];
-    phase = 0.0f;
   }
   
   void render(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
+    background(0);
     
-    // Smooth spectrum
-    for (int i = 0; i < min(spectrum.length, smoothedSpectrum.length); i++) {
-      smoothedSpectrum[i] = lerp(smoothedSpectrum[i], spectrum[i], 0.2f);
-    }
+    if (spectrum == null || spectrum.length == 0) return;
     
-    // Animated phase
-    phase += 0.02f + bass * 0.05f;
-    
-    pushStyle();
-    
-    // Dark gradient background
-    noStroke();
-    for (int i = 0; i < height; i++) {
-      float inter = map(i, 0, height, 0.0f, 1.0f);
-      float darkness = lerp(8.0f, 20.0f, abs(inter - 0.5f) * 2.0f);
-      fill(darkness, darkness * 1.1f, darkness * 1.3f);
-      rect(0, i, width, 1);
-    }
-    
-    // Get current palette
     ColorPalette palette = controls.paletteManager.getCurrent();
     
-    // Grid lines
-    stroke(30, 40, 60, 80);
-    strokeWeight(1);
-    for (int i = 0; i < 5; i++) {
-      float y = map(i, 0, 4, height * 0.1f, height * 0.9f);
-      line(0, y, width, y);
+    int waveResolution = min(spectrum.length, 256);
+    float spacing = width / float(waveResolution);
+    
+    // Forme remplie
+    noStroke();
+    beginShape();
+    vertex(0, height / 2.0f);
+    
+    for (int i = 0; i < waveResolution; i++) {
+      float x = i * spacing;
+      
+      // AMPLIFICATION EXACTE COMME SPECTRUM
+      float amplification = map(i, 0, waveResolution, 20.0f, 200.0f);
+      float h = spectrum[i] * height * amplification * 0.4f;
+      float y = height / 2.0f - h;
+      
+      float position = (float)i / waveResolution;
+      color c = palette.getColorSmooth(position);
+      fill(c, 80);
+      
+      vertex(x, y);
     }
     
-    // Main waveform with palette colors
+    vertex(width, height / 2.0f);
+    endShape(CLOSE);
+    
+    // Contour haut
     noFill();
-    
-    // Outer glow layer
-    strokeWeight(6);
-    color glowColor = palette.getColorSmooth(0.3f);
-    stroke(red(glowColor), green(glowColor), blue(glowColor), 50);
+    strokeWeight(3.0f);
     beginShape();
-    for (int i = 0; i < smoothedSpectrum.length; i++) {
-      float x = map(i, 0, smoothedSpectrum.length, 0, width);
-      float wave = sin(i * 0.15f + phase) * smoothedSpectrum[i] * height * 0.35f;
-      float y = height/2.0f + wave + sin(i * 0.05f + phase * 0.5f) * mid * 30.0f;
+    
+    for (int i = 0; i < waveResolution; i++) {
+      float x = i * spacing;
+      float amplification = map(i, 0, waveResolution, 20.0f, 200.0f);
+      float h = spectrum[i] * height * amplification * 0.4f;
+      float y = height / 2.0f - h;
+      
+      float position = (float)i / waveResolution;
+      color c = palette.getColorSmooth(position);
+      stroke(c);
+      
       vertex(x, y);
     }
     endShape();
     
-    // Main waveform with gradient from palette
-    for (int i = 1; i < smoothedSpectrum.length; i++) {
-      float x1 = map(i - 1, 0, smoothedSpectrum.length, 0, width);
-      float x2 = map(i, 0, smoothedSpectrum.length, 0, width);
-      
-      float wave1 = sin((i - 1) * 0.15f + phase) * smoothedSpectrum[i - 1] * height * 0.35f;
-      float y1 = height/2.0f + wave1 + sin((i - 1) * 0.05f + phase * 0.5f) * mid * 30.0f;
-      
-      float wave2 = sin(i * 0.15f + phase) * smoothedSpectrum[i] * height * 0.35f;
-      float y2 = height/2.0f + wave2 + sin(i * 0.05f + phase * 0.5f) * mid * 30.0f;
-      
-      // Get color from palette based on position
-      float position = (float)i / smoothedSpectrum.length;
-      color lineColor = palette.getColorSmooth(position);
-      
-      strokeWeight(3);
-      stroke(lineColor, 220);
-      line(x1, y1, x2, y2);
-    }
-    
-    // Bright core line
-    strokeWeight(1);
+    // Miroir bas
+    strokeWeight(2.0f);
     beginShape();
-    for (int i = 0; i < smoothedSpectrum.length; i++) {
-      float x = map(i, 0, smoothedSpectrum.length, 0, width);
-      float wave = sin(i * 0.15f + phase) * smoothedSpectrum[i] * height * 0.35f;
-      float y = height/2.0f + wave + sin(i * 0.05f + phase * 0.5f) * mid * 30.0f;
+    
+    for (int i = 0; i < waveResolution; i++) {
+      float x = i * spacing;
+      float amplification = map(i, 0, waveResolution, 20.0f, 200.0f);
+      float h = spectrum[i] * height * amplification * 0.4f;
+      float y = height / 2.0f + h;
       
-      color brightColor = palette.getColorSmooth((float)i / smoothedSpectrum.length);
-      stroke(red(brightColor) * 1.2f, green(brightColor) * 1.2f, blue(brightColor) * 1.2f);
+      float position = (float)i / waveResolution;
+      color c = palette.getColorSmooth(position);
+      stroke(c, 150);
+      
       vertex(x, y);
     }
     endShape();
+  }
+}
+
+// ============================================
+// MODE 3 : CIRCULAIRE 3D
+// (Basé sur draw3DCircular du projet monolithique)
+// ============================================
+
+class Mode_Radial extends BaseMode {
+  
+  Mode_Radial() {
+    super("Circulaire 3D");
+  }
+  
+  void render(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
+    pushStyle();
+    colorMode(HSB, 360, 100, 100);
     
-    // Mirror waveform (inverted) with inverted palette
-    for (int i = 1; i < smoothedSpectrum.length; i++) {
-      float x1 = map(i - 1, 0, smoothedSpectrum.length, 0, width);
-      float x2 = map(i, 0, smoothedSpectrum.length, 0, width);
-      
-      float wave1 = sin((i - 1) * 0.15f + phase) * smoothedSpectrum[i - 1] * height * 0.35f;
-      float y1 = height/2.0f - wave1 - sin((i - 1) * 0.05f + phase * 0.5f) * mid * 30.0f;
-      
-      float wave2 = sin(i * 0.15f + phase) * smoothedSpectrum[i] * height * 0.35f;
-      float y2 = height/2.0f - wave2 - sin(i * 0.05f + phase * 0.5f) * mid * 30.0f;
-      
-      // Get color from palette (inverted position)
-      float position = 1.0f - (float)i / smoothedSpectrum.length;
-      color lineColor = palette.getColorSmooth(position);
-      
-      strokeWeight(2);
-      stroke(lineColor, 180);
-      line(x1, y1, x2, y2);
-    }
+    // Get palette
+    ColorPalette palette = controls.paletteManager.getCurrent();
     
-    // Center reference line with bass pulse
-    stroke(100, 150, 200, 100 + bass * 100.0f);
-    strokeWeight(2);
-    line(0, height/2.0f, width, height/2.0f);
+    pushMatrix();
+    translate(width/2, height/2, 0);
+    rotateY(frameCount * 0.01f);
+    rotateX(sin(frameCount * 0.005f) * 0.2f);
     
-    // Bass reactive circles along centerline
-    if (bass > 0.5f) {
+    float radius = 150; // REDUIT de 300 à 150
+    float angleStep = TWO_PI / spectrum.length;
+    strokeWeight(3);
+    
+    for (int i = 0; i < spectrum.length; i++) {
+      float angle = i * angleStep;
+      float amp = constrain(spectrum[i] * 500, 0, 400); // AMPLIFIE
+      
+      // Get color from palette
+      float position = (float)i / spectrum.length;
+      color barColor = palette.getColorSmooth(position);
+      
+      stroke(hue(barColor), saturation(barColor), brightness(barColor));
+      
+      float x1 = cos(angle) * radius;
+      float y1 = sin(angle) * radius;
+      float x2 = cos(angle) * (radius + amp);
+      float y2 = sin(angle) * (radius + amp);
+      
+      // LIGNE depuis le centre
+      line(x1, y1, 0, x2, y2, amp * 0.5f);
+      
+      // Sphere at end
+      pushMatrix();
+      translate(x2, y2, amp * 0.5f);
       noStroke();
-      color bassColor = palette.getColorSmooth(0.5f);
-      fill(red(bassColor), green(bassColor), blue(bassColor), bass * 150.0f);
-      for (int i = 0; i < 10; i++) {
-        float x = map(i, 0, 9, 0, width);
-        circle(x, height/2.0f, 10.0f + bass * 30.0f);
-      }
+      fill(hue(barColor), saturation(barColor) * 0.8f, brightness(barColor));
+      sphere(5 + bass * 3);
+      popMatrix();
     }
     
+    popMatrix();
     popStyle();
   }
 }
 
 // ============================================
-// MODE 3 : RADIAL
+// MODE 5 : 64 OSCILLOSCOPES
+// (Basé sur draw64Oscilloscopes du projet monolithique)
 // ============================================
 
-class Mode_Radial extends BaseMode {
+class Mode_Oscilloscopes extends BaseMode {
   
-  float rotation;
-  float[] smoothedSpectrum;
+  float[] smoothSpectrum;
   
-  Mode_Radial() {
-    super("Radial");
-    rotation = 0.0f;
-    smoothedSpectrum = new float[64];
+  Mode_Oscilloscopes() {
+    super("64 Oscilloscopes");
+    smoothSpectrum = new float[64];
   }
   
   void render(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
-    
     // Smooth spectrum
-    for (int i = 0; i < min(spectrum.length, smoothedSpectrum.length); i++) {
-      smoothedSpectrum[i] = lerp(smoothedSpectrum[i], spectrum[i], 0.25f);
+    for (int i = 0; i < min(spectrum.length, smoothSpectrum.length); i++) {
+      smoothSpectrum[i] = lerp(smoothSpectrum[i], spectrum[i], 0.3f);
     }
-    
-    // Background with vignette
-    pushStyle();
-    noStroke();
-    for (int i = 0; i < height; i++) {
-      float inter = map(i, 0, height, 0.0f, 1.0f);
-      float darkness = lerp(15.0f, 5.0f, inter);
-      fill(darkness);
-      rect(0, i, width, 1);
-    }
-    popStyle();
-    
-    pushMatrix();
-    translate(width/2.0f, height/2.0f);
-    
-    // Rotate slowly
-    rotation += bass * 0.02f + 0.001f;
-    rotate(rotation);
     
     pushStyle();
+    colorMode(HSB, 360, 100, 100);
     
-    // Get current palette
-    ColorPalette palette = controls.paletteManager.getCurrent();
+    int cols = 8;
+    int rows = 8;
+    float cellW = width / (float)cols;
+    float cellH = height / (float)rows;
     
-    // Concentric circles
-    noFill();
-    for (int i = 1; i <= 8; i++) {
-      float alpha = map(i, 1, 8, 80.0f, 20.0f);
-      color circleColor = palette.getColorSmooth((float)i / 8.0f);
-      stroke(red(circleColor), green(circleColor), blue(circleColor), alpha);
-      strokeWeight(1);
-      circle(0, 0, i * 80.0f + bass * 30.0f);
-    }
-    
-    // Radial spectrum bars
-    float angleStep = TWO_PI / smoothedSpectrum.length;
-    
-    for (int i = 0; i < smoothedSpectrum.length; i++) {
-      float angle = i * angleStep;
-      float radius = 80.0f + smoothedSpectrum[i] * 350.0f * controls.spectrumGain;
+    for (int i = 0; i < 64; i++) {
+      int col = i % cols;
+      int row = i / cols;
+      float x = col * cellW;
+      float y = row * cellH;
+      float hue = map(i, 0, 64, 0, 360);
+      float amp = constrain(smoothSpectrum[i] * 200, 0, cellH * 0.4f); // AMPLIFIE x200
       
       // Get color from palette
-      float position = (float)i / smoothedSpectrum.length;
-      color barColor = palette.getColorSmooth(position);
+      ColorPalette palette = controls.paletteManager.getCurrent();
+      float position = (float)i / 64.0f;
+      color cellColor = palette.getColorSmooth(position);
       
-      // Outer glow
       pushMatrix();
-      rotate(angle);
+      translate(x + cellW/2, y + cellH/2);
       
-      noStroke();
-      fill(red(barColor), green(barColor), blue(barColor), 100);
-      triangle(
-        0, -8.0f,
-        radius + 20.0f, -8.0f,
-        radius + 20.0f, 8.0f
-      );
+      // Border
+      noFill();
+      stroke(hue, 50, 30);
+      strokeWeight(1);
+      rect(-cellW/2 + 5, -cellH/2 + 5, cellW - 10, cellH - 10);
       
-      // Main bar
-      fill(red(barColor), green(barColor), blue(barColor));
-      triangle(
-        0, -5.0f,
-        radius, -5.0f,
-        radius, 5.0f
-      );
+      // Center line
+      stroke(hue, 30, 50);
+      line(-cellW/2 + 5, 0, cellW/2 - 5, 0);
       
-      // Tip glow
-      if (smoothedSpectrum[i] > 0.4f) {
-        fill(255, 255, 255, 200);
-        circle(radius, 0, 15.0f + bass * 10.0f);
+      // Waveform
+      stroke(hue, 80, 100);
+      strokeWeight(2);
+      noFill();
+      
+      beginShape();
+      int points = 50;
+      for (int p = 0; p < points; p++) {
+        float px = map(p, 0, points - 1, -cellW/2 + 5, cellW/2 - 5);
+        float phase = frameCount * 0.05f + i * 0.5f;
+        float wave = sin(p * 0.3f + phase) * amp;
+        wave += sin(p * 0.6f + phase * 2) * amp * 0.3f;
+        vertex(px, wave);
       }
+      endShape();
+      
+      // Glow on strong signal
+      if (amp > 5) {
+        stroke(hue, 80, 100, 30);
+        strokeWeight(4);
+        beginShape();
+        for (int p = 0; p < points; p++) {
+          float px = map(p, 0, points - 1, -cellW/2 + 5, cellW/2 - 5);
+          float phase = frameCount * 0.05f + i * 0.5f;
+          float wave = sin(p * 0.3f + phase) * amp;
+          wave += sin(p * 0.6f + phase * 2) * amp * 0.3f;
+          vertex(px, wave);
+        }
+        endShape();
+      }
+      
+      // Label
+      fill(hue, 60, 80);
+      textAlign(CENTER, CENTER);
+      textSize(8);
+      text(i, 0, cellH/2 - 15);
       
       popMatrix();
     }
     
-    // Center orb with multiple layers
+    popStyle();
+  }
+}
+// ============================================
+// MODE 6 : CIRCULAIRE STATIQUE
+// (Basé sur drawCircularStatic du projet monolithique)
+// ============================================
+
+class Mode_CircularStatic extends BaseMode {
+  
+  Mode_CircularStatic() {
+    super("Circulaire Static");
+  }
+  
+  void render(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
+    pushStyle();
+    colorMode(HSB, 360, 100, 100);
+    
+    // Get palette
+    ColorPalette palette = controls.paletteManager.getCurrent();
+    
+    pushMatrix();
+    translate(width/2, height/2);
+    
+    float radius = 150;
+    int numBars = 32;
+    float barWidth = TWO_PI / numBars;
+    
+    for (int i = 0; i < numBars; i++) {
+      float avgAmp = 0;
+      int binsPerBar = spectrum.length / numBars;
+      int startIdx = i * binsPerBar;
+      int endIdx = min(startIdx + binsPerBar, spectrum.length);
+      
+      for (int j = startIdx; j < endIdx; j++) {
+        avgAmp += spectrum[j];
+      }
+      avgAmp /= binsPerBar;
+      
+      float angle = i * barWidth;
+      float amp = constrain(avgAmp * 500, 0, 300); // AMPLIFIE x500
+      
+      // Get color from palette
+      float position = (float)i / numBars;
+      color barColor = palette.getColorSmooth(position);
+      
+      // Draw layered arcs
+      for (float r = radius; r < radius + amp; r += 5) {
+        float alpha = map(r, radius, radius + amp, 100, 50);
+        fill(hue(barColor), 80, 90, alpha);
+        noStroke();
+        arc(0, 0, r * 2, r * 2, 
+            angle - barWidth/2, angle + barWidth/2, PIE);
+      }
+    }
+    
+    // Center dark circle
+    fill(0, 0, 0, 150);
     noStroke();
+    ellipse(0, 0, radius * 2, radius * 2);
     
-    // Use palette center color
-    color centerColor = palette.getColorSmooth(0.5f);
+    // Center outline
+    noFill();
+    stroke(0, 0, 100, 50);
+    strokeWeight(2);
+    ellipse(0, 0, radius * 2, radius * 2);
     
-    // Outer glow
-    fill(red(centerColor), green(centerColor), blue(centerColor), 50);
-    circle(0, 0, 100.0f + bass * 80.0f);
+    popMatrix();
+    popStyle();
+  }
+}
+
+// ============================================
+// MODE 7 : BARRES DE FREQUENCE AMELIOREES
+// (Basé sur drawFrequencyBarsImproved du projet monolithique)
+// ============================================
+
+class Mode_FrequencyBars extends BaseMode {
+  
+  Mode_FrequencyBars() {
+    super("Frequency Bars");
+  }
+  
+  void render(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
+    pushStyle();
+    colorMode(HSB, 360, 100, 100);
     
-    // Middle layer
-    fill(red(centerColor), green(centerColor), blue(centerColor), 150);
-    circle(0, 0, 60.0f + bass * 50.0f);
+    float barWidth = width / (float)spectrum.length;
+    float barSpacing = 2;
     
-    // Core
-    fill(red(centerColor), green(centerColor), blue(centerColor));
-    circle(0, 0, 30.0f + bass * 30.0f);
-    
-    // Inner bright spot
-    fill(255, 200);
-    circle(0, 0, 10.0f + bass * 10.0f);
+    for (int i = 0; i < spectrum.length; i++) {
+      float h = constrain(spectrum[i] * 50, 0, height * 0.8f);
+      float hue = map(i, 0, spectrum.length, 240, 0);
+      float sat = map(h, 0, height, 50, 100);
+      
+      // Main bar
+      fill(hue, sat, 90);
+      noStroke();
+      rect(i * barWidth, height - h, barWidth - barSpacing, h, 2);
+      
+      // Top glow
+      fill(hue, sat, 60, 30);
+      rect(i * barWidth, height - h - 5, barWidth - barSpacing, h * 0.3f, 2);
+    }
     
     popStyle();
-    popMatrix();
   }
 }

@@ -42,6 +42,18 @@ void setup() {
   
   println("|===AUDIO VISUALIZER VJ v2.0===|");
   
+  // DEBUG : Vérifier le chemin
+  println("=== DEBUG IMAGE ===");
+  println("Chemin data : " + dataPath(""));
+  println("Chemin BG.png : " + dataPath("BG.png"));
+  
+  File f = new File(dataPath("BG.png"));
+  println("Fichier existe ? " + f.exists());
+  
+  if (f.exists()) {
+    println("Taille fichier : " + f.length() + " bytes");
+  }
+  
   // Load background image
   loadBackgroundImage();
 
@@ -64,37 +76,79 @@ void setup() {
   delay(1000);
   hud.updateInfo(viz.getCurrentModeName(), controls.paletteManager.getCurrent().name);
 }
-
 void loadBackgroundImage() {
   File f = new File(dataPath("BG.png"));
   if (f.exists()) {
     try {
-      bgImage = loadImage(dataPath("BG.png"));
-      bgImage.resize(width, height);
-      bgLoaded = true;
-      println("Background image loaded: BG.png");
+      PImage temp = loadImage(dataPath("BG.png"));
+      if (temp != null) {
+        bgImage = createImage(width, height, ARGB);
+        bgImage.copy(temp, 0, 0, temp.width, temp.height, 0, 0, width, height);
+        bgLoaded = true;
+        println("Image chargee : BG.png");
+      } else {
+        println("Erreur : Impossible de charger BG.png");
+        bgLoaded = false;
+      }
     } catch (Exception e) {
-      println("Error loading BG.png: " + e.getMessage());
+      println("Erreur : " + e.getMessage());
       bgLoaded = false;
     }
   } else {
-    println("BG.png not found in data folder");
+    println("BG.png introuvable dans le dossier data");
     bgLoaded = false;
   }
 }
 
+void loadCustomImage(String path) {
+  try {
+    PImage temp = loadImage(path);
+    if (temp != null) {
+      bgImage = createImage(width, height, ARGB);
+      bgImage.copy(temp, 0, 0, temp.width, temp.height, 0, 0, width, height);
+      bgLoaded = true;
+      println("Image chargee : " + path);
+    } else {
+      println("Erreur : Impossible de charger " + path);
+      bgLoaded = false;
+    }
+  } catch (Exception e) {
+    println("Erreur : " + e.getMessage());
+    bgLoaded = false;
+  }
+}
+
+
 void draw() {
-  // Background
-  if (bgLoaded && controls.showBackground) {
-    image(bgImage, 0, 0);
-    // fill(0, 150);
+  // ============================================
+  // CALQUE 1 : FOND + DATAMOSH
+  // ============================================
+  
+  if (bgLoaded && showBackground) {
+    // Appliquer le datamosh sur l'image de fond
+    if (controls.datamoshEnabled) {
+      viz.datamoshEffect.apply(bgImage, audio.getBass(), audio.getMid(), audio.getTreble(), null );
+    } else {
+      // Si pas de datamosh, afficher l'image normale
+      image(bgImage, 0, 0);
+    }
+    
+    // Overlay semi-transparent pour atténuer le fond
+    fill(0, 150);
     rect(0, 0, width, height);
-  } 
+    
+  } else {
+    background(0);
+  }
+  
+  // ============================================
+  // CALQUE 2 : EFFETS VISUELS (PAR-DESSUS)
+  // ============================================
   
   // Update audio
   audio.update();
   
-  // Update visualization
+  // Dessiner les visualisations PAR-DESSUS le fond datamoshé
   viz.update(
     audio.getBass(), 
     audio.getMid(), 
@@ -103,9 +157,9 @@ void draw() {
     controls
   );
   
-  // Datamosh via viz.datamoshEffect
-  if (controls.datamoshEnabled) {
-  }
+  // ============================================
+  // CALQUE 3 : UI (TOUJOURS AU-DESSUS)
+  // ============================================
   
   if (controls.showHelp) {
     controls.drawHelpOverlay();
@@ -115,17 +169,6 @@ void draw() {
     hud.updateInfo(viz.getCurrentModeName(), controls.paletteManager.getCurrent().name);
   }
   
-
-  
-  // Update HUD info moins souvent (toutes les 2 secondes)
-  if (frameCount % 120 == 0) {
-    hud.updateInfo(
-      viz.getCurrentModeName(),
-      controls.paletteManager.getCurrent().name
-    );
-  }
-  
-  // Info en bas
   if (!controls.showHelp) {
     drawMainInfo();
   }
@@ -160,24 +203,32 @@ void oscEvent(OscMessage msg) {
 // CONTROLS
 // ============================================
 void keyPressed() {
-  // Touche I pour charger image
-  if (key == 'i' || key == 'I') {
-    selectInput("Select background image:", "imageSelected");
-  } else {
-    controls.handleKey(key, keyCode, viz, audio, hud);
+// DATAMOSH (touche G)
+  if (key == 'g' || key == 'G') {
+    controls.datamoshEnabled = !controls.datamoshEnabled;
+    println("Datamosh : " + (controls.datamoshEnabled ? "ON" : "OFF"));
   }
+  
+  // CHARGER IMAGE (touche I)
+  if (key == 'i' || key == 'I') {
+    selectImageFile();
+  }
+  
+  // TOGGLE AFFICHAGE IMAGE (touche B)
+  if (key == 'b' || key == 'B') {
+    showBackground = !showBackground;
+    println("Fond : " + (showBackground ? "ON" : "OFF"));
+  }
+}
+
+
+void selectImageFile() {
+  selectInput("Choisir une image de fond", "imageSelected");
 }
 
 void imageSelected(File selection) {
   if (selection != null) {
-    try {
-      bgImage = loadImage(selection.getAbsolutePath());
-      bgImage.resize(width, height);
-      bgLoaded = true;
-      println("Background image loaded: " + selection.getName());
-    } catch (Exception e) {
-      println("Error loading image: " + e.getMessage());
-    }
+    loadCustomImage(selection.getAbsolutePath());
   }
 }
 
