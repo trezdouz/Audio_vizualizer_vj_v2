@@ -1,3 +1,7 @@
+// ============================================
+// CONTROLS MANAGER - CORRIGÉ
+// ============================================
+
 class ControlsManager {
 
   boolean particlesEnabled;
@@ -9,9 +13,6 @@ class ControlsManager {
   boolean spectrumMirror;
   float spectrumGain;
   
-  // NOUVEAU : Contrôle de transparence des modes
-  float modesOpacity = 1.0;  // 0.0 = transparent, 1.0 = opaque
-  
   boolean waveformTrail = true;
   boolean waveformMultiple = false;
   boolean waveformParticles = true;
@@ -20,20 +21,21 @@ class ControlsManager {
   int maxParticles;
   
   PaletteManager paletteManager;
-  ControlsManager() {
-  particles = new ArrayList<Particle>();
-  particlesEnabled = false;
-  showHelp = false;
-  datamoshEnabled = false;
-  showBackground = true;
-  spectrumCentered = false;
-  spectrumMirror = false;
-  spectrumGain = 1.0;
-  maxParticles = 200;
   
-  paletteManager = new PaletteManager();  //  CETTE LIGNE EST LÀ ?
-}
- 
+  ControlsManager() {
+    particles = new ArrayList<Particle>();
+    particlesEnabled = false;
+    showHelp = false;
+    datamoshEnabled = false;
+    showBackground = true;
+    spectrumCentered = false;
+    spectrumMirror = false;
+    spectrumGain = 1.0;
+    maxParticles = 200;
+    
+    paletteManager = new PaletteManager();
+  }
+  
   void handleKey(char k, int kCode, VisualizationEngine viz, AudioManager audio, HUDWindow hud) {
     
     if (k >= '1' && k <= '9') {
@@ -41,13 +43,22 @@ class ControlsManager {
     }
     else if (key == 'g' || key == 'G') {
       datamoshEnabled = !datamoshEnabled;
-      viz.datamoshEffect.toggle();
+      println("Datamosh: " + (datamoshEnabled ? "ON" : "OFF"));
     }
-
+    else if (k == ' ') {
+      particlesEnabled = !particlesEnabled;
+      println("Particles: " + (particlesEnabled ? "ON" : "OFF"));
+    }
+    else if (k == 'h' || k == 'H') {
+      hud.toggle();
+    }
     else if (kCode == TAB) {
       viz.nextMode();
     }
-   
+    
+    else if (k == 'f' || k == 'F') {
+      showHelp = !showHelp;
+    }
     else if (k == 'p' || k == 'P') {
       paletteManager.next();
     }
@@ -70,40 +81,6 @@ class ControlsManager {
       spectrumGain = constrain(spectrumGain - 0.1, 0.1, 5.0);
       println("Spectrum gain: " + nf(spectrumGain, 1, 1));
     }
-    // NOUVEAU : Contrôle de transparence
-    else if (k == 't' || k == 'T') {
-      modesOpacity = constrain(modesOpacity + 0.1, 0.0, 1.0);
-      println("Modes opacity: " + nf(modesOpacity * 100, 0, 0) + "%");
-    }
-    else if (k == 'y' || k == 'Y') {
-      modesOpacity = constrain(modesOpacity - 0.1, 0.0, 1.0);
-      println("Modes opacity: " + nf(modesOpacity * 100, 0, 0) + "%");
-    }
-    else if (key == 's' || key == 'S') {
-  String name = JOptionPane.showInputDialog("Nom du preset :");
-  if (name != null) presetManager.save(name);
-}
-else if (key == 'l' || key == 'L') {
-  String[] presets = presetManager.list();
-  if (presets.length == 0) {
-    println("Aucun preset.");
-    return;
-  }
-  String name = (String) JOptionPane.showInputDialog(
-      null, "Choisir preset :", "Presets",
-      JOptionPane.QUESTION_MESSAGE, null, presets, presets[0]);
-  if (name != null) presetManager.load(name);
-}
-  }
-  
-  // NOUVELLE MÉTHODE : Pour contrôle MIDI futur
-  void setModesOpacity(float value) {
-    modesOpacity = constrain(value, 0.0, 1.0);
-  }
-  
-  //  NOUVELLE MÉTHODE : Obtenir l'alpha à appliquer (0-255)
-  float getModesAlpha() {
-    return modesOpacity * 255.0;
   }
   
   void printHelp() {
@@ -117,7 +94,6 @@ else if (key == 'l' || key == 'L') {
     println("   G      : Toggle datamosh");
     println("   B      : Toggle background");
     println("   I      : Load image");
-    println("   T/Y    : Modes opacity +/-");  // ⭐ AJOUT
     println("   C      : Center spectrum");
     println("   M      : Mirror spectrum");
     println("   +/-    : Spectrum gain");
@@ -127,7 +103,7 @@ else if (key == 'l' || key == 'L') {
   void drawHelpOverlay() {
     pushStyle();
     fill(0, 200);
-    rect(20, 20, 350, 450);  // ⭐ Augmenté la hauteur
+    rect(20, 20, 350, 400);
     
     fill(255);
     textAlign(LEFT, TOP);
@@ -144,7 +120,6 @@ else if (key == 'l' || key == 'L') {
     text("G : Toggle Datamosh", 40, y); y += 25;
     text("B : Toggle Background", 40, y); y += 25;
     text("I : Load background image", 40, y); y += 25;
-    text("T/Y : Modes opacity +/-", 40, y); y += 25;  // ⭐ AJOUT
     text("C : Center spectrum", 40, y); y += 25;
     text("M : Mirror spectrum", 40, y); y += 25;
     text("+/- : Spectrum gain", 40, y); y += 25;
@@ -155,7 +130,6 @@ else if (key == 'l' || key == 'L') {
     text("Palette: " + paletteManager.getCurrent().name, 40, y);
     text("Datamosh: " + (datamoshEnabled ? "ON" : "OFF"), 40, y + 20);
     text("Background: " + (showBackground ? "ON" : "OFF"), 40, y + 40);
-    text("Opacity: " + nf(modesOpacity * 100, 0, 0) + "%", 40, y + 60);  // ⭐ AJOUT
     
     popStyle();
   }

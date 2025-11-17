@@ -1,4 +1,7 @@
-//===========
+// ============================================
+// MODE 1 : SPECTRUM ANALYZER
+// ============================================
+
 class SpectrumMode extends BaseMode {
   
   SpectrumMode() {
@@ -7,17 +10,17 @@ class SpectrumMode extends BaseMode {
   
   void render(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
     
+    // Si pas de donnees, stop
     if (spectrum == null || spectrum.length == 0) return;
     
+    // Get current palette
     ColorPalette palette = controls.paletteManager.getCurrent();
     
     noStroke();
     float barWidth = width / float(spectrum.length);
     
-    // ⭐ Récupérer l'alpha depuis controls
-    float alpha = controls.getModesAlpha();
-    
     if (controls.spectrumCentered) {
+      // MODE CENTRE
       pushMatrix();
       translate(0, height/2.0f);
       
@@ -29,15 +32,17 @@ class SpectrumMode extends BaseMode {
         if (h < 2.0f) h = 2.0f;
         if (h > height/2.0f) h = height/2.0f;
         
+        // Get color from palette
         float position = (float)i / spectrum.length;
         color barColor = palette.getColorSmooth(position);
         
-        // ⭐ Appliquer l'alpha contrôlé
-        fill(red(barColor), green(barColor), blue(barColor), alpha);
+        // Barre vers le haut
+        fill(barColor);
         rect(x, 0, barWidth - 1, -h);
         
+        // Barre vers le bas (miroir)
         if (controls.spectrumMirror) {
-          fill(red(barColor), green(barColor), blue(barColor), alpha * 0.6);
+          fill(red(barColor), green(barColor), blue(barColor), 150);
           rect(x, 0, barWidth - 1, h);
         }
       }
@@ -54,21 +59,23 @@ class SpectrumMode extends BaseMode {
         if (h < 2.0f) h = 2.0f;
         if (h > height) h = height;
         
+        // Get color from palette
         float position = (float)i / spectrum.length;
         color barColor = palette.getColorSmooth(position);
         
-        // ⭐ Appliquer l'alpha contrôlé
-        fill(red(barColor), green(barColor), blue(barColor), alpha);
+        fill(barColor);
         rect(x, height - h, barWidth - 1, h);
         
+        // Effet miroir (reflection en haut)
         if (controls.spectrumMirror) {
-          fill(red(barColor), green(barColor), blue(barColor), alpha * 0.6);
+          fill(red(barColor), green(barColor), blue(barColor), 100);
           rect(x, height - h - h * 0.3f, barWidth - 1, h * 0.3f);
         }
       }
     }
   }
 }
+
 
 // =================================
 // MODE 2 : OSCILLOSCOPE HORIZONTAL
@@ -85,9 +92,6 @@ class Mode_Waveform extends BaseMode {
     
     ColorPalette palette = controls.paletteManager.getCurrent();
     
-    // ⭐ Récupérer l'alpha
-    float alpha = controls.getModesAlpha();
-    
     int waveResolution = min(spectrum.length, 256);
     float spacing = width / float(waveResolution);
     
@@ -98,15 +102,16 @@ class Mode_Waveform extends BaseMode {
     
     for (int i = 0; i < waveResolution; i++) {
       float x = i * spacing;
+      
+      // AMPLIFICATION EXACTE COMME SPECTRUM
       float amplification = map(i, 0, waveResolution, 20.0f, 200.0f);
       float h = spectrum[i] * height * amplification * 0.4f;
       float y = height / 2.0f - h;
       
       float position = (float)i / waveResolution;
       color c = palette.getColorSmooth(position);
+      fill(c, 80);
       
-      // ⭐ Appliquer alpha
-      fill(red(c), green(c), blue(c), alpha * 0.3);
       vertex(x, y);
     }
     
@@ -126,9 +131,8 @@ class Mode_Waveform extends BaseMode {
       
       float position = (float)i / waveResolution;
       color c = palette.getColorSmooth(position);
+      stroke(c);
       
-      // ⭐ Appliquer alpha
-      stroke(red(c), green(c), blue(c), alpha);
       vertex(x, y);
     }
     endShape();
@@ -145,14 +149,14 @@ class Mode_Waveform extends BaseMode {
       
       float position = (float)i / waveResolution;
       color c = palette.getColorSmooth(position);
+      stroke(c, 150);
       
-      // ⭐ Appliquer alpha
-      stroke(red(c), green(c), blue(c), alpha * 0.6);
       vertex(x, y);
     }
     endShape();
   }
 }
+
 // ============================================
 // MODE 3 : CIRCULAIRE 3D
 // (BasÃ© sur draw3DCircular du projet monolithique)

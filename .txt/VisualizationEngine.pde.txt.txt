@@ -35,7 +35,9 @@ class VisualizationEngine {
   void update(float bass, float mid, float treble, float[] spectrum, ControlsManager controls) {
     currentMode.render(bass, mid, treble, spectrum, controls);
     
-  
+     if (datamoshEffect.enabled) {
+      datamoshEffect.apply(bass, mid, treble);
+    }
  }
  
 

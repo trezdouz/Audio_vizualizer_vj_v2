@@ -1,5 +1,6 @@
 // ============================================
 // DATAMOSH EFFECT - CORRIGÉ
+// S'applique UNIQUEMENT sur l'image de fond
 // ============================================
 
 class DatamoshEffect {
@@ -9,32 +10,43 @@ class DatamoshEffect {
 
   DatamoshEffect(int w, int h) {
     buffer = null;
-    sourceImage = null;
     enabled = false;
-    println("DatamoshEffect initialisé");
+    println("DatamoshEffect initialise");
   }
 
+  // Définir l'image source à glitcher
   void setSourceImage(PImage img) {
     sourceImage = img;
-    if (buffer == null && img != null) {
-      buffer = createGraphics(img.width, img.height);
+  
+// Buffer
+if (buffer == null && img != null) {
+            buffer = createGraphics(img.width, img.height);
       println("Buffer datamosh créé: " + img.width + "x" + img.height);
     }
-  }
-
-  // ✅ Retourne l'image glitchée (ou originale si désactivé)
-  PImage getGlitchedImage() {
+}  
+  // Applique les glitches et affiche
+  void apply(float bass, float mid, float treble)  {
+     println(">>> apply() appelé - enabled: " + enabled + " | sourceImage: " + (sourceImage != null) + " | buffer: " + (buffer != null));
     if (!enabled || sourceImage == null || buffer == null) {
-      return sourceImage; // image originale si pas de glitch
+        println(">>> Sortie anticipée !"); 
+        return;
     }
+    println("=== ça commencegggggggg ===");
+  println("enabled: " + enabled);
+  println("sourceImage: " + (sourceImage == null ? "NULL" : "OK"));
+  println("bass: " + bass + " | mid: " + mid + " | treble: " + treble);
+    if (!enabled || sourceImage == null) return;
 
-    // ✅ Applique les effets dans le buffer
     buffer.beginDraw();
+    buffer.background(0);
+    
+    // Copie l'image de fond dans le buffer
     buffer.image(sourceImage, 0, 0);
+    
     buffer.loadPixels();
 
-    // Glitch 1: Pixel shift
-    int intensity = int(audio.getBass() * 200);
+    // Glitch 1: Pixel shift (bass)
+    int intensity = int(bass * 50.0);
     for (int i = 0; i < intensity; i++) {
       int x = int(random(buffer.width));
       int y = int(random(buffer.height));
@@ -44,22 +56,24 @@ class DatamoshEffect {
       }
     }
 
-    // Glitch 2: Color shift
-    float shift = audio.getMid() * 60;
-    int step = 4;
-    for (int i = 0; i < buffer.pixels.length; i += step) {
+    // Glitch 2: Color shift (mid)
+    float shift = mid * 20.0;
+    for (int i = 0; i < buffer.pixels.length; i++) {
       color c = buffer.pixels[i];
-      buffer.pixels[i] = color((red(c) + shift) % 255, green(c), blue(c));
+      float r = red(c);
+      float g = green(c);
+      float b = blue(c);
+      buffer.pixels[i] = color((r + shift) % 255.0, g, b);
     }
 
-    // Glitch 3: Block displacement
-    int blockSize = 128;
-    int numBlocks = int(audio.getTreble() * 40);
+    // Glitch 3: Block displacement (treble)
+    int blockSize = 16;
+    int numBlocks = int(treble * 10.0);
     for (int i = 0; i < numBlocks; i++) {
       int bx = int(random(buffer.width / blockSize)) * blockSize;
       int by = int(random(buffer.height / blockSize)) * blockSize;
-      int offsetX = int(random(-40, 40));
-      int offsetY = int(random(-40, 40));
+      int offsetX = int(random(-20.0, 20.0));
+      int offsetY = int(random(-20.0, 20.0));
 
       for (int y = 0; y < blockSize; y++) {
         for (int x = 0; x < blockSize; x++) {
@@ -81,7 +95,8 @@ class DatamoshEffect {
     buffer.updatePixels();
     buffer.endDraw();
 
-    return buffer; // ✅ image glitchée
+    //  Remplace l'image de fond par la version glitchée
+    image(buffer, 0, 0);
   }
 
   void toggle() {
