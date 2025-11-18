@@ -16,6 +16,8 @@ class PresetManager {
     current.setFloat("opacity", controls.modesOpacity);
     current.setBoolean("datamosh", controls.datamoshEnabled);
     current.setBoolean("background", controls.showBackground);
+    current.setInt("displayIndex", displayIndex);
+current.setBoolean("fullScreenOn", fullScreenOn);
     saveJSONObject(current, presetPath + name + ".json");
     println("Preset sauvegardé : " + name);
   }
@@ -24,12 +26,15 @@ class PresetManager {
     try {
       current = loadJSONObject(presetPath + name + ".json");
       viz.switchMode(current.getInt("modeIndex"));
-      controls.paletteManager.setByName(current.getString("palette"));
+      int idw = current.getInt("paletteIndex");
+
+      
       controls.modesOpacity = current.getFloat("opacity");
       controls.datamoshEnabled = current.getBoolean("datamosh");
       controls.showBackground = current.getBoolean("background");
       println("Preset chargé : " + name);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       println("Preset introuvable : " + name);
     }
   }
@@ -39,8 +44,8 @@ class PresetManager {
     String[] names = dir.list();
     if (names == null) return new String[0];
     return Arrays.stream(names)
-                 .filter(n -> n.endsWith(".json"))
-                 .map(n -> n.replace(".json", ""))
-                 .toArray(String[]::new);
+      .filter(n -> n.endsWith(".json"))
+      .map(n -> n.replace(".json", ""))
+      .toArray(String[]::new);
   }
 }

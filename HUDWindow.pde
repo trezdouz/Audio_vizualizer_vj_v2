@@ -8,7 +8,7 @@ class HUDWindow extends PApplet {
   ControlsManager controls;
   boolean visible;
 
-  // Levels history
+  // Historique des niveaux
   float[] bassHistory;
   float[] midHistory;
   float[] trebleHistory;
@@ -18,14 +18,11 @@ class HUDWindow extends PApplet {
   int windowWidth = 600;
   int windowHeight = 500;
 
-  // Cache pour eviter les appels constants
+  // Cache pour éviter les appels constants
   String cachedModeName = "Loading...";
   String cachedPaletteName = "Loading...";
 
-
-
-
-  // compteur
+  // Compteur
   int updateCounter = 0;
 
   HUDWindow(IAudioProvider p) {
@@ -37,87 +34,67 @@ class HUDWindow extends PApplet {
     trebleHistory = new float[100];
     historyIndex = 0;
 
-    // Lance la fenetre separee
+    // Lance la fenêtre séparée
     PApplet.runSketch(new String[]{this.getClass().getSimpleName()}, this);
   }
 
-  void settings() {
-    size(windowWidth, windowHeight);
-  }
+  
 
   void draw() {
-  // 1. Aide mode
-  if (controls != null && controls.showHelp) {
-    drawHelpOverlay();
-    return;
+    // 1. Aide mode
+    if (controls != null && controls.showHelp) {
+      drawHelpOverlay();
+      return;
+    }
+
+    // 2. HUD masqué
+    if (!visible) {
+      background(0);
+      return;
+    }
+
+    // 3. HUD normal
+    for (int i = 0; i < height; i++) {
+      float inter = map(i, 0, height, 0, 1);
+      float darkness = lerp(20, 40, inter);
+      stroke(darkness);
+      line(0, i, width, i);
+    }
+
+    float bass = parent.getAudio().getBass();
+    float mid  = parent.getAudio().getMid();
+    float treb = parent.getAudio().getTreble();
+
+    bassHistory[historyIndex] = bass;
+    midHistory[historyIndex]  = mid;
+    trebleHistory[historyIndex] = treb;
+    historyIndex = (historyIndex + 1) % bassHistory.length;
+
+    drawHUD(bass, mid, treb);
   }
 
-  // 2. HUD masque
-  if (!visible) {
-    background(0);
-    return;
+  void drawHelpOverlay() {
+    pushStyle();
+    fill(0, 220);
+    rect(20, 20, width - 40, height - 40);
+
+    fill(255);
+    textAlign(LEFT, TOP);
+    textSize(18);
+    text("CONTROLS", 40, 40);
+
+    // Appel statique corrigé
+    HelpRenderer.drawHelpOverlay(40, 70, this);
+
+    // Infos dynamiques
+    int y = height - 100;
+    text("Mode: " + cachedModeName, 40, y);
+    text("Palette: " + cachedPaletteName, 40, y + 20);
+    text("Sender: " + senderType, 40, y + 40);
+
+    popStyle();
   }
 
-  // 3. HUD normal
-  for (int i = 0; i < height; i++) {
-    float inter = map(i, 0, height, 0, 1);
-    float darkness = lerp(20, 40, inter);
-    stroke(darkness);
-    line(0, i, width, i);
-  }
-
-  float bass = parent.getAudio().getBass();
-  float mid  = parent.getAudio().getMid();
-  float treb = parent.getAudio().getTreble();
-
-  bassHistory[historyIndex] = bass;
-  midHistory[historyIndex]  = mid;
-  trebleHistory[historyIndex] = treb;
-  historyIndex = (historyIndex + 1) % bassHistory.length;
-
-  drawHUD(bass, mid, treb);
-}
-void drawHelpOverlay() {
-  pushStyle();
-  fill(0, 220);
-  rect(20, 20, width - 40, height - 40);
-
-  fill(255);
-  textAlign(LEFT, TOP);
-  textSize(18);
-  text("CONTROLS", 40, 40);
-
-  textSize(14);
-  int y = 70;
-  String[] lines = {
-    "1-9 : Switch mode",
-    "TAB : Next mode",
-    "SPACE : Particles",
-    "H : Toggle this help",
-    "P/O : Change palette",
-    "G : Toggle Datamosh",
-    "B : Toggle Background",
-    "I : Load image",
-    "C : Center spectrum",
-    "M : Mirror spectrum",
-    "+/- : Spectrum gain",
-    "F : Full-screen viz",
-    "ESC : Quit"
-  };
-
-  for (String l : lines) {
-    text(l, 40, y);
-    y += 20;
-  }
-
-  // Infos dynamiques
-  y += 10;
-  text("Mode: " + cachedModeName, 40, y);
-  text("Palette: " + cachedPaletteName, 40, y + 20);
-  text("Sender: " + senderType, 40, y + 40);
-
-  popStyle();
-}
   void drawHUD(float bass, float mid, float treble) {
     pushStyle();
 
@@ -141,7 +118,7 @@ void drawHelpOverlay() {
       text("OSC: WAITING...", 15, 40);
     }
 
-    // Mode et Palette info (FIXE - pas de clignotement)
+    // Mode et Palette
     fill(255);
     textAlign(RIGHT, TOP);
     text("Mode: " + cachedModeName, width - 15, 15);
@@ -156,20 +133,19 @@ void drawHelpOverlay() {
 
     textSize(14);
 
-    // Bass bar
+    // Bass
     fill(255, 100, 100);
-    textAlign(LEFT, CENTER);
     text("BASS", 15, 110);
     drawLevelBar(100, 110, 300, 20, bass, color(255, 100, 100));
     text(nf(bass, 0, 3), 410, 110);
 
-    // Mid bar
+    // Mid
     fill(100, 255, 100);
     text("MID", 15, 140);
     drawLevelBar(100, 140, 300, 20, mid, color(100, 255, 100));
     text(nf(mid, 0, 3), 410, 140);
 
-    // Treble bar
+    // Treble
     fill(100, 200, 255);
     text("TREBLE", 15, 170);
     drawLevelBar(100, 170, 300, 20, treble, color(100, 200, 255));
@@ -193,7 +169,7 @@ void drawHelpOverlay() {
     noStroke();
     rect(x, y, w, h, 3);
 
-    // Level bar
+    // Level
     float barWidth = constrain(level * w, 0, w);
     fill(c);
     rect(x, y, barWidth, h, 3);
@@ -215,11 +191,11 @@ void drawHelpOverlay() {
     float graphHeight = 200;
     float graphWidth = width - 30;
 
-    // Background
+    // Fond
     fill(30, 150);
     rect(15, startY, graphWidth, graphHeight);
 
-    // Grid
+    // Grille
     stroke(60);
     strokeWeight(1);
     for (int i = 0; i <= 4; i++) {
@@ -227,40 +203,12 @@ void drawHelpOverlay() {
       line(15, y, 15 + graphWidth, y);
     }
 
-    // Bass (red)
-    stroke(255, 100, 100, 200);
-    strokeWeight(2);
-    beginShape();
-    for (int i = 0; i < bassHistory.length; i++) {
-      float x = map(i, 0, bassHistory.length, 15, 15 + graphWidth);
-      float y = map(bassHistory[i], 0.0f, 1.0f, startY + graphHeight, startY);
-      vertex(x, y);
-    }
-    endShape();
+    // Courbes
+    drawWaveformLayer(bassHistory, color(255, 100, 100, 200), startY, graphHeight, graphWidth);
+    drawWaveformLayer(midHistory, color(100, 255, 100, 200), startY, graphHeight, graphWidth);
+    drawWaveformLayer(trebleHistory, color(100, 200, 255, 200), startY, graphHeight, graphWidth);
 
-    // Mid (green)
-    stroke(100, 255, 100, 200);
-    strokeWeight(2);
-    beginShape();
-    for (int i = 0; i < midHistory.length; i++) {
-      float x = map(i, 0, midHistory.length, 15, 15 + graphWidth);
-      float y = map(midHistory[i], 0.0f, 1.0f, startY + graphHeight, startY);
-      vertex(x, y);
-    }
-    endShape();
-
-    // Treble (blue)
-    stroke(100, 200, 255, 200);
-    strokeWeight(2);
-    beginShape();
-    for (int i = 0; i < trebleHistory.length; i++) {
-      float x = map(i, 0, trebleHistory.length, 15, 15 + graphWidth);
-      float y = map(trebleHistory[i], 0.0f, 1.0f, startY + graphHeight, startY);
-      vertex(x, y);
-    }
-    endShape();
-
-    // Legend
+    // Légende
     fill(255, 100, 100);
     text("BASS", 20, startY + graphHeight + 10);
     fill(100, 255, 100);
@@ -270,27 +218,46 @@ void drawHelpOverlay() {
 
     popStyle();
   }
-void setControls(ControlsManager c) {
-  controls = c;
-}
+
+  void drawWaveformLayer(float[] history, color c, float startY, float graphHeight, float graphWidth) {
+    stroke(c);
+    strokeWeight(2);
+    beginShape();
+    for (int i = 0; i < history.length; i++) {
+      float x = map(i, 0, history.length, 15, 15 + graphWidth);
+      float y = map(history[i], 0.0f, 1.0f, startY + graphHeight, startY);
+      vertex(x, y);
+    }
+    endShape();
+  }
+
+  // ------------------------------------------
+  // Méthodes publiques
+  // ------------------------------------------
+  void setControls(ControlsManager c) {
+    controls = c;
+  }
+
   void toggle() {
     visible = !visible;
     println("HUD: " + (visible ? "VISIBLE" : "HIDDEN"));
   }
+
   void setVisible(boolean v) {
     visible = v;
-    surface.setVisible(v);   // montre/cache la fenêtre HUD
+    surface.setVisible(v);
   }
-  // Methode pour update les infos depuis le main thread
+
   void updateInfo(String modeName, String paletteName) {
     cachedModeName = modeName;
     cachedPaletteName = paletteName;
   }
-void refresh() {
-  // Force un nouveau frame
-  surface.setVisible(visible);   // même visible → redessine
-}
+
+  void refresh() {
+    surface.setVisible(visible);
+  }
+
   void dispose() {
-    // Cleanup if needed
+    // Cleanup si besoin
   }
 }

@@ -15,68 +15,70 @@ class AudioManager {
   private float rawTreble;
   private float[] rawSpectrum;
   private float[] rawBuffer;
-  
+
   // Smoothed values
   private float smoothBass;
   private float smoothMid;
   private float smoothTreble;
   private float[] smoothSpectrum;
   private float[] smoothBuffer;
-  
+
   private float SMOOTHING;
   private float DECAY;
-  
+
   private boolean oscReceived;
   private int lastOscTime;
-  
+  private float rawBpm = 120.0f;
+  private float smoothBpm = 120.0f;
+
   AudioManager(int spectrumSize) {
     rawBass = 0.0f;
     rawMid = 0.0f;
     rawTreble = 0.0f;
     rawSpectrum = new float[spectrumSize];
     rawBuffer = new float[128];
-    
+
     smoothBass = 0.0f;
     smoothMid = 0.0f;
     smoothTreble = 0.0f;
     smoothSpectrum = new float[spectrumSize];
     smoothBuffer = new float[128];
-    
+
     SMOOTHING = 0.05f;
     DECAY = 0.98f;
-    
+
     oscReceived = false;
     lastOscTime = 0;
-    
   }
-  
+
   // ============================================
   // OSC HANDLING (appele depuis oscEvent())
   // ============================================
   void handleOSC(OscMessage msg) {
     lastOscTime = millis();
     oscReceived = true;
-    
+
     if (msg.checkAddrPattern("/audio/energy")) {
       if (msg.arguments().length >= 3) {
         rawBass = msg.get(0).floatValue();
         rawMid = msg.get(1).floatValue();
         rawTreble = msg.get(2).floatValue();
       }
-    }else if (msg.checkAddrPattern("/audio/spectrum")) {
-  int bands = min(rawSpectrum.length, msg.arguments().length);
-  for (int i = 0; i < bands; i++) {
-    rawSpectrum[i] = msg.get(i).floatValue();
-  }
-}
-else if (msg.checkAddrPattern("/audio/waveform")) { 
+    } else if (msg.checkAddrPattern("/audio/spectrum")) {
+      int bands = min(rawSpectrum.length, msg.arguments().length);
+      for (int i = 0; i < bands; i++) {
+        rawSpectrum[i] = msg.get(i).floatValue();
+      }
+    } else if (msg.checkAddrPattern("/audio/waveform")) {
       int samples = min(rawBuffer.length, msg.arguments().length);
       for (int i = 0; i < samples; i++) {
         rawBuffer[i] = msg.get(i).floatValue();
       }
+    } else if (msg.checkAddrPattern("/audio/bpm")) {
+      rawBpm = msg.get(0).floatValue();
     }
   }
-  
+
   // ============================================
   // UPDATE
   // ============================================
@@ -84,52 +86,55 @@ else if (msg.checkAddrPattern("/audio/waveform")) {
     smoothBass = lerp(smoothBass, rawBass, SMOOTHING);
     smoothMid = lerp(smoothMid, rawMid, SMOOTHING);
     smoothTreble = lerp(smoothTreble, rawTreble, SMOOTHING);
-    
+    smoothBpm = lerp(smoothBpm, rawBpm, 0.1f);
+
+
     for (int i = 0; i < smoothSpectrum.length; i++) {
       smoothSpectrum[i] = lerp(smoothSpectrum[i], rawSpectrum[i], SMOOTHING);
     }
-    
+
     for (int i = 0; i < smoothBuffer.length; i++) {
       smoothBuffer[i] = lerp(smoothBuffer[i], rawBuffer[i], SMOOTHING * 0.5f);
     }
-    
+
     if (millis() - lastOscTime > 100) {
       smoothBass *= DECAY;
       smoothMid *= DECAY;
       smoothTreble *= DECAY;
     }
-    
+
     if (millis() - lastOscTime > 2000) {
       oscReceived = false;
     }
   }
-  
+
   // ============================================
   // GETTERS
   // ============================================
-  float getBass() { 
-    return constrain(smoothBass * 50.0f, 0.0f, 1.0f); 
+  float getBass() {
+    return constrain(smoothBass * 50.0f, 0.0f, 1.0f);
   }
-  
-  float getMid() { 
-    return constrain(smoothMid * 50.0f, 0.0f, 1.0f); 
+
+  float getMid() {
+    return constrain(smoothMid * 50.0f, 0.0f, 1.0f);
   }
-  
-  float getTreble() { 
-    return constrain(smoothTreble * 50.0f, 0.0f, 1.0f); 
+
+  float getTreble() {
+    return constrain(smoothTreble * 50.0f, 0.0f, 1.0f);
   }
-  
-  float[] getSpectrum() { 
-    return (smoothSpectrum); 
+
+  float[] getSpectrum() {
+    return (smoothSpectrum);
   }
-  
-  float[] getRawBuffer() { 
+
+  float[] getRawBuffer() {
     return smoothBuffer;
   }
-  
-  boolean isOSCActive() { 
-    return oscReceived && (millis() - lastOscTime < 1000); 
+
+  boolean isOSCActive() {
+    return oscReceived && (millis() - lastOscTime < 1000);
   }
-  
-  
+  float getBPM() {
+    return smoothBpm;
+  }
 }

@@ -11,9 +11,7 @@ class HelpWindow extends PApplet {
     PApplet.runSketch(new String[]{this.getClass().getSimpleName()}, this);
   }
 
-  void settings() {
-    size(400, 500);
-  }
+
 
   void draw() {
     if (!visible) {
@@ -26,34 +24,32 @@ class HelpWindow extends PApplet {
     textAlign(LEFT, TOP);
     textSize(18);
     text("CONTROLS", 20, 20);
-
     textSize(14);
-    int y = 50;
-    String[] lines = {
-      "1-9 : Switch mode",
-      "TAB : Next mode",
-      "SPACE : Particles",
-      "H : Toggle this help",
-      "P/O : Change palette",
-      "G : Toggle Datamosh",
-      "B : Toggle Background",
-      "I : Load image",
-      "C : Center spectrum",
-      "M : Mirror spectrum",
-      "+/- : Spectrum gain",
-      "F : Full-screen viz",
-      "ESC : Quit"
-    };
-
-    for (String l : lines) {
-      text(l, 20, y);
-      y += 20;
-    }
+    HelpRenderer.drawHelpOverlay(20, 50, this);
   }
+
 
   void toggle() {
     visible = !visible;
     surface.setVisible(visible);
     if (visible) surface.setLocation(displayWidth - width - 50, 50); // coin écran 2
+  }
+}
+
+// ============================================
+// HELP RENDERER - Centralise l'affichage de l'aide
+// ============================================
+
+static class HelpRenderer {
+  static void drawHelpOverlay(int x, int y, PApplet app) {
+    app.pushStyle();
+    app.fill(255);
+    app.textAlign(LEFT, TOP);
+    app.textSize(14);
+    for (String line : KeyBindings.LINES) {
+      app.text(line, x, y);
+      y += 20;
+    }
+    app.popStyle();
   }
 }

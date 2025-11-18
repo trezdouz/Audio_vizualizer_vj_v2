@@ -8,14 +8,14 @@ abstract class BaseMode {
   protected PGraphics buffer;
   protected boolean useGPU;
   protected PShader shader;
-  
+
   // Audio data
   protected float[] spectrum;
-  
+
   // Metadata
   protected String name;
   protected int renderColorMode;
-  
+
   // ============================================
   // CONSTRUCTEUR
   // ============================================
@@ -27,36 +27,37 @@ abstract class BaseMode {
     this.buffer = null;
     this.shader = null;
   }
-  
+
   // ============================================
   // METHODES OBLIGATOIRES
   // ============================================
-  
+
   abstract void render(float bass, float mid, float treble, float[] spectrum, ControlsManager controls);
-  
+
   // ============================================
   // METHODES COMMUNES
   // ============================================
-  
+
   void enableGPU(String shaderPath) {
     try {
       shader = loadShader(shaderPath);
       useGPU = true;
       println("GPU active pour " + name);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       println("Shader non trouve pour " + name + ", fallback CPU");
       useGPU = false;
     }
   }
-  
+
   void setRenderColorMode(int mode) {
     this.renderColorMode = mode;
   }
-  
+
   String getName() {
     return name;
   }
-  
+
   void cleanup() {
     if (buffer != null) {
       buffer.dispose();
